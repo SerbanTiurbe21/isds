@@ -1,22 +1,21 @@
 package com.example.isds.demo.service;
 
 import com.example.isds.demo.dto.InterviewScoreDocumentDTO;
+import com.example.isds.demo.exception.InterviewNotFoundException;
+import com.example.isds.demo.exception.InvalidSectionTitleException;
 import com.example.isds.demo.model.InterviewScoreDocument;
 import com.example.isds.demo.model.Section;
 import com.example.isds.demo.repository.InterviewRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 import static com.example.isds.demo.utility.InterviewDocumentFormatter.toDTO;
 
 @Service
 public class InterviewServiceImpl implements InterviewService {
-
     private final InterviewRepository interviewRepository;
     private final List<String> validSectionTitles;
 
@@ -28,19 +27,14 @@ public class InterviewServiceImpl implements InterviewService {
     }
 
     @Override
-    public List<String> getValidSectionTitles() {
-        return Collections.unmodifiableList(validSectionTitles);
-    }
-
-    @Override
     public InterviewScoreDocument createInterviewScoreDocument(InterviewScoreDocument interviewScoreDocument) {
         validateSectionTitles(interviewScoreDocument.getSections());
         return interviewRepository.save(interviewScoreDocument);
     }
 
     @Override
-    public Optional<InterviewScoreDocument> getInterviewById(String id) {
-        return interviewRepository.findById(id);
+    public InterviewScoreDocument getInterviewById(String id) {
+        return interviewRepository.findById(id).orElseThrow(() -> new InterviewNotFoundException("Interview not found"));
     }
 
     @Override
@@ -49,22 +43,52 @@ public class InterviewServiceImpl implements InterviewService {
     }
 
     @Override
-    public Optional<InterviewScoreDocument> updateInterviewScoreDocument(String id, InterviewScoreDocument interviewScoreDocument) {
-        validateSectionTitles(interviewScoreDocument.getSections());
-        return getInterviewById(id).map(interviewScoreDocument1 -> {
-            interviewScoreDocument1.setSections(interviewScoreDocument.getSections());
-            interviewScoreDocument1.setCandidateIdentifier(interviewScoreDocument.getCandidateIdentifier());
-            interviewScoreDocument1.setInterviewDate(interviewScoreDocument.getInterviewDate());
-            interviewScoreDocument1.setLastUpdate(interviewScoreDocument.getLastUpdate());
-            interviewScoreDocument1.setFinalScore(interviewScoreDocument.getFinalScore());
-            interviewScoreDocument1.setRoleAppliedFor(interviewScoreDocument.getRoleAppliedFor());
-            return interviewRepository.save(interviewScoreDocument1);
-        });
+    public InterviewScoreDocument updateInterviewScoreDocument(String id, InterviewScoreDocument updatedInterviewScoreDocument) {
+        validateSectionTitles(updatedInterviewScoreDocument.getSections());
+        InterviewScoreDocument interviewScoreDocument = getInterviewById(id);
+
+        interviewScoreDocument.setSections(updatedInterviewScoreDocument.getSections());
+        interviewScoreDocument.setCandidateIdentifier(updatedInterviewScoreDocument.getCandidateIdentifier());
+        interviewScoreDocument.setInterviewDate(updatedInterviewScoreDocument.getInterviewDate());
+        interviewScoreDocument.setLastUpdate(updatedInterviewScoreDocument.getLastUpdate());
+        interviewScoreDocument.setFinalScore(computeFinalScore(updatedInterviewScoreDocument));
+        interviewScoreDocument.setRoleAppliedFor(updatedInterviewScoreDocument.getRoleAppliedFor());
+
+        return interviewRepository.save(interviewScoreDocument);
     }
 
     @Override
     public void deleteInterviewById(String id) {
         interviewRepository.deleteById(id);
+    }
+
+    @Override
+    public InterviewScoreDocumentDTO getFormattedInterviewById(String id) {
+        InterviewScoreDocument document = interviewRepository.findById(id)
+                .orElseThrow(() -> new InterviewNotFoundException("Interview document not found with id: " + id));
+        double finalScore = computeFinalScore(document);
+        return toDTO(document, finalScore);
+    }
+
+    @Override
+    public InterviewScoreDocumentDTO getFormattedInterviewByCandidateId(String candidateId) {
+        InterviewScoreDocument document = interviewRepository.findByCandidateId(candidateId)
+                .orElseThrow(() -> new InterviewNotFoundException("Interview document not found for candidate ID: " + candidateId));
+        double finalScore = computeFinalScore(document);
+        return toDTO(document, finalScore);
+    }
+
+
+    private List<String> getValidSectionTitles() {
+        return Collections.unmodifiableList(validSectionTitles);
+    }
+
+    private void validateSectionTitles(List<Section> sections) {
+        for (Section section : sections) {
+            if (!getValidSectionTitles().contains(section.getTitle())) {
+                throw new InvalidSectionTitleException("Invalid section title: " + section.getTitle());
+            }
+        }
     }
 
     @Override
@@ -84,29 +108,5 @@ public class InterviewServiceImpl implements InterviewService {
                 .summaryStatistics();
 
         return sumAndCount.getCount() > 0 ? sumAndCount.getSum() / sumAndCount.getCount() : 0;
-    }
-
-    @Override
-    public Optional<InterviewScoreDocumentDTO> getFormattedInterviewById(String id) {
-        return interviewRepository.findById(id).map(document -> {
-            double finalScore = computeFinalScore(document);
-            return toDTO(document, finalScore);
-        });
-    }
-
-    @Override
-    public Optional<InterviewScoreDocumentDTO> getFormattedInterviewByCandidateId(String candidateId) {
-        return interviewRepository.findByCandidateId(candidateId).map(document -> {
-            double finalScore = computeFinalScore(document);
-            return toDTO(document, finalScore);
-        });
-    }
-
-    private void validateSectionTitles(List<Section> sections) {
-        for (Section section : sections) {
-            if (!getValidSectionTitles().contains(section.getTitle())) {
-                throw new IllegalArgumentException("Invalid section title: " + section.getTitle());
-            }
-        }
     }
 }

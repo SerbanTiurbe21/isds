@@ -17,7 +17,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Tag(name = "Interview Documents", description = "Operations related to interview documents")
@@ -38,7 +37,7 @@ public class InterviewController {
     public ResponseEntity<InterviewScoreDocument> createInterview(
             @Parameter(description = "Interview document to be created", required = true) @RequestBody InterviewScoreDocument interviewScoreDocument) {
         InterviewScoreDocument savedInterviewScoreDocument = interviewService.createInterviewScoreDocument(interviewScoreDocument);
-        return new ResponseEntity<>(savedInterviewScoreDocument, HttpStatus.CREATED);
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedInterviewScoreDocument);
     }
 
     @Operation(summary = "Get a specific interview document by its ID")
@@ -49,10 +48,8 @@ public class InterviewController {
     @GetMapping("/{id}")
     public ResponseEntity<InterviewScoreDocumentDTO> getFormattedInterviewById(
             @Parameter(description = "ID of the interview document to be retrieved", required = true) @PathVariable String id) {
-        Optional<InterviewScoreDocumentDTO> formattedInterview = interviewService.getFormattedInterviewById(id);
-        return formattedInterview
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        InterviewScoreDocumentDTO formattedInterview = interviewService.getFormattedInterviewById(id);
+        return ResponseEntity.ok(formattedInterview);
     }
 
     @Operation(summary = "Get a specific interview document by the candidate's ID")
@@ -63,10 +60,8 @@ public class InterviewController {
     @GetMapping("/by-candidate-id/{candidateId}")
     public ResponseEntity<InterviewScoreDocumentDTO> getInterviewByCandidateId(
             @Parameter(description = "ID of the candidate to retrieve the interview document for", required = true) @PathVariable String candidateId) {
-        Optional<InterviewScoreDocumentDTO> formattedInterview = interviewService.getFormattedInterviewByCandidateId(candidateId);
-        return formattedInterview
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        InterviewScoreDocumentDTO formattedInterview = interviewService.getFormattedInterviewByCandidateId(candidateId);
+        return ResponseEntity.ok(formattedInterview);
     }
 
     @Operation(summary = "Get all interview documents")
@@ -89,9 +84,8 @@ public class InterviewController {
     public ResponseEntity<InterviewScoreDocument> updateInterview(
             @Parameter(description = "ID of the interview document to be updated", required = true) @PathVariable String id,
             @Parameter(description = "Updated interview document", required = true) @RequestBody InterviewScoreDocument interviewScoreDocumentDetails) {
-        return interviewService.updateInterviewScoreDocument(id, interviewScoreDocumentDetails)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        InterviewScoreDocument updatedDocument = interviewService.updateInterviewScoreDocument(id, interviewScoreDocumentDetails);
+        return ResponseEntity.ok(updatedDocument);
     }
 
     @Operation(summary = "Delete an existing interview document")
