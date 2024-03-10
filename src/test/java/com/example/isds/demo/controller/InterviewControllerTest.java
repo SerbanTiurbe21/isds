@@ -17,10 +17,12 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -81,10 +83,11 @@ class InterviewControllerTest {
     void createInterviewShouldReturnCreatedInterview() {
         when(interviewService.createInterviewScoreDocument(any(InterviewScoreDocument.class))).thenReturn(mockInterviewDocument);
 
-        ResponseEntity<InterviewScoreDocument> response = interviewController.createInterview(mockInterviewDocument);
+        Mono<ResponseEntity<InterviewScoreDocument>> response = interviewController.createInterview(mockInterviewDocument);
 
-        assertEquals(HttpStatus.CREATED.value(), response.getStatusCode().value());
-        assertEquals(mockInterviewDocument, response.getBody());
+//        assertEquals(HttpStatus.CREATED.value(), response.getStatusCode().value());
+        assertEquals(HttpStatus.CREATED.value(), Objects.requireNonNull(response.block()).getStatusCode().value());
+        assertEquals(mockInterviewDocument, Objects.requireNonNull(response.block()).getBody());
 
         verify(interviewService).createInterviewScoreDocument(mockInterviewDocument);
     }
@@ -93,10 +96,10 @@ class InterviewControllerTest {
     void getFormattedInterviewByIdShouldReturnInterviewWhenFound() {
         when(interviewService.getFormattedInterviewById("1234")).thenReturn(mockInterviewDocumentDTO);
 
-        ResponseEntity<InterviewScoreDocumentDTO> response = interviewController.getFormattedInterviewById("1234");
+        Mono<ResponseEntity<InterviewScoreDocumentDTO>> response = interviewController.getFormattedInterviewById("1234");
 
-        assertEquals(OK.value(), response.getStatusCode().value());
-        assertEquals(mockInterviewDocumentDTO, response.getBody());
+        assertEquals(OK.value(), Objects.requireNonNull(response.block()).getStatusCode().value());
+        assertEquals(mockInterviewDocumentDTO, Objects.requireNonNull(response.block()).getBody());
 
         verify(interviewService).getFormattedInterviewById("1234");
     }
@@ -120,10 +123,10 @@ class InterviewControllerTest {
     void getInterviewByCandidateIdShouldReturnInterviewWhenFound() {
         when(interviewService.getFormattedInterviewByCandidateId("1234")).thenReturn(mockInterviewDocumentDTO);
 
-        ResponseEntity<InterviewScoreDocumentDTO> response = interviewController.getInterviewByCandidateId("1234");
+        Mono<ResponseEntity<InterviewScoreDocumentDTO>> response = interviewController.getInterviewByCandidateId("1234");
 
-        assertEquals(OK.value(), response.getStatusCode().value());
-        assertEquals(mockInterviewDocumentDTO, response.getBody());
+        assertEquals(OK.value(), Objects.requireNonNull(response.block()).getStatusCode().value());
+        assertEquals(mockInterviewDocumentDTO, Objects.requireNonNull(response.block()).getBody());
 
         verify(interviewService).getFormattedInterviewByCandidateId("1234");
     }
@@ -146,22 +149,22 @@ class InterviewControllerTest {
     void getAllInterviewsShouldReturnListOfInterviews() {
         when(interviewService.getAllInterviews()).thenReturn(Collections.singletonList(mockInterviewDocument));
 
-        ResponseEntity<List<InterviewScoreDocumentDTO>> response = interviewController.getAllInterviews();
+        Mono<ResponseEntity<List<InterviewScoreDocumentDTO>>> response = interviewController.getAllInterviews();
 
-        assertEquals(OK, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertEquals(1, response.getBody().size());
+        assertEquals(OK, Objects.requireNonNull(response.block()).getStatusCode());
+        assertNotNull(Objects.requireNonNull(response.block()).getBody());
+        assertEquals(1, Objects.requireNonNull(Objects.requireNonNull(response.block()).getBody()).size());
     }
 
     @Test
     void getAllInterviewsShouldReturnEmptyListWhenNoInterviews() {
         when(interviewService.getAllInterviews()).thenReturn(Collections.emptyList());
 
-        ResponseEntity<List<InterviewScoreDocumentDTO>> response = interviewController.getAllInterviews();
+        Mono<ResponseEntity<List<InterviewScoreDocumentDTO>>> response = interviewController.getAllInterviews();
 
-        assertEquals(OK, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertEquals(0, response.getBody().size());
+        assertEquals(OK, Objects.requireNonNull(response.block()).getStatusCode());
+        assertNotNull(Objects.requireNonNull(response.block()).getBody());
+        assertEquals(0, Objects.requireNonNull(Objects.requireNonNull(response.block()).getBody()).size());
     }
 
     @Test
@@ -170,10 +173,10 @@ class InterviewControllerTest {
         when(interviewService.updateInterviewScoreDocument(eq(id), any(InterviewScoreDocument.class)))
                 .thenReturn(mockInterviewDocument);
 
-        ResponseEntity<InterviewScoreDocument> response = interviewController.updateInterview(id, mockInterviewDocument);
+        Mono<ResponseEntity<InterviewScoreDocument>> response = interviewController.updateInterview(id, mockInterviewDocument);
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(mockInterviewDocument, response.getBody());
+        assertEquals(HttpStatus.OK, Objects.requireNonNull(response.block()).getStatusCode());
+        assertEquals(mockInterviewDocument, Objects.requireNonNull(response.block()).getBody());
         verify(interviewService).updateInterviewScoreDocument(id, mockInterviewDocument);
     }
 
@@ -196,9 +199,9 @@ class InterviewControllerTest {
         String id = "1234";
         doNothing().when(interviewService).deleteInterviewById(id);
 
-        ResponseEntity<Void> response = interviewController.deleteInterviewById(id);
+        Mono<ResponseEntity<Void>> response = interviewController.deleteInterviewById(id);
 
-        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
+        assertEquals(HttpStatus.NO_CONTENT, Objects.requireNonNull(response.block()).getStatusCode());
         verify(interviewService).deleteInterviewById(id);
     }
 }
