@@ -1,6 +1,7 @@
 package com.example.isds.demo.service;
 
 import com.example.isds.demo.dto.InterviewScoreDocumentDTO;
+import com.example.isds.demo.exception.InterviewScoreDocumentAlreadyExistsException;
 import com.example.isds.demo.exception.InvalidSectionTitleException;
 import com.example.isds.demo.model.InterviewScoreDocument;
 import com.example.isds.demo.model.InterviewerFeedback;
@@ -19,9 +20,10 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.doNothing;
 
 @ExtendWith(MockitoExtension.class)
 class InterviewServiceTest {
@@ -88,7 +90,7 @@ class InterviewServiceTest {
     }
 
     @Test
-    void createInterviewScoreDocument_ShouldSaveAndReturnDocument(){
+    void createInterviewScoreDocumentShouldSaveAndReturnDocument(){
         when(interviewRepository.save(any(InterviewScoreDocument.class))).thenReturn(mockInterviewDocument);
 
         InterviewScoreDocument result = interviewService.createInterviewScoreDocument(mockInterviewDocument);
@@ -98,7 +100,22 @@ class InterviewServiceTest {
     }
 
     @Test
-    void getInterviewById_ShouldReturnInterviewWhenPresent(){
+    void createInterviewScoreDocumentShouldThrowInterviewScoreDocumentAlreadyExistsExceptionWhenDocumentExists() {
+        when(interviewRepository.findByCandidateIdAndRoleAppliedForAndInterviewDate(
+                mockInterviewDocument.getCandidateId(),
+                mockInterviewDocument.getRoleAppliedFor(),
+                mockInterviewDocument.getInterviewDate())
+        ).thenReturn(Optional.of(mockInterviewDocument));
+
+        assertThrows(InterviewScoreDocumentAlreadyExistsException.class, () -> {
+            interviewService.createInterviewScoreDocument(mockInterviewDocument);
+        });
+
+        verify(interviewRepository, never()).save(any(InterviewScoreDocument.class));
+    }
+
+    @Test
+    void getInterviewByIdShouldReturnInterviewWhenPresent(){
         when(interviewRepository.findById("123")).thenReturn(Optional.of(mockInterviewDocument));
 
         InterviewScoreDocument result = interviewService.getInterviewById("123");
@@ -108,7 +125,7 @@ class InterviewServiceTest {
     }
 
     @Test
-    void getAllInterviews_ShouldReturnAllInterviews() {
+    void getAllInterviewsShouldReturnAllInterviews() {
         when(interviewRepository.findAll()).thenReturn(List.of(mockInterviewDocument));
 
         List<InterviewScoreDocument> result = interviewService.getAllInterviews();
@@ -118,7 +135,7 @@ class InterviewServiceTest {
     }
 
     @Test
-    void updateInterviewScoreDocument_ShouldUpdateAndReturnInterview() {
+    void updateInterviewScoreDocumentShouldUpdateAndReturnInterview() {
         when(interviewRepository.findById("123")).thenReturn(Optional.of(mockInterviewDocument));
         when(interviewRepository.save(any(InterviewScoreDocument.class))).thenReturn(mockInterviewDocument);
 
@@ -139,7 +156,7 @@ class InterviewServiceTest {
     }
 
     @Test
-    void deleteInterviewById_ShouldDeleteInterview() {
+    void deleteInterviewByIdShouldDeleteInterview() {
         doNothing().when(interviewRepository).deleteById("123");
 
         interviewService.deleteInterviewById("123");
@@ -148,7 +165,7 @@ class InterviewServiceTest {
     }
 
     @Test
-    void getFormattedInterviewById_ShouldReturnFormattedInterview() {
+    void getFormattedInterviewByIdShouldReturnFormattedInterview() {
         when(interviewRepository.findById("123")).thenReturn(Optional.of(mockInterviewDocument));
 
         InterviewScoreDocumentDTO result = interviewService.getFormattedInterviewById("123");
@@ -158,7 +175,7 @@ class InterviewServiceTest {
     }
 
     @Test
-    void getFormattedInterviewByCandidateId_ShouldReturnFormattedInterview() {
+    void getFormattedInterviewByCandidateIdShouldReturnFormattedInterview() {
         when(interviewRepository.findByCandidateId("123")).thenReturn(Optional.ofNullable(mockInterviewDocument));
 
         InterviewScoreDocumentDTO result = interviewService.getFormattedInterviewByCandidateId("123");

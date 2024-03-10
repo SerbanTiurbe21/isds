@@ -46,7 +46,7 @@ class InterviewRepositoryTest {
 
     @AfterEach
     public void tearDown() {
-        interviewRepository.deleteAll();
+        interviewRepository.delete(mockInterviewDocument);
     }
 
     @Test
@@ -82,5 +82,14 @@ class InterviewRepositoryTest {
         String candidateId = mockInterviewDocument.getCandidateId();
         Optional<InterviewScoreDocument> result = interviewRepository.findByCandidateId(candidateId);
         assertTrue(result.isPresent(), "Interview document should be found by candidate ID");
+    }
+
+    @Test
+    void findByCandidateIdAndRoleAppliedForAndInterviewDateShouldReturnDocument() {
+        String candidateId = mockInterviewDocument.getCandidateId();
+        String roleAppliedFor = mockInterviewDocument.getRoleAppliedFor();
+        LocalDate interviewDate = mockInterviewDocument.getInterviewDate();
+        Optional<InterviewScoreDocument> result = interviewRepository.findByCandidateIdAndRoleAppliedForAndInterviewDate(candidateId, roleAppliedFor, interviewDate);
+        assertTrue(result.isPresent(), "Interview document should be found by candidate ID, role applied for, and interview date");
     }
 }

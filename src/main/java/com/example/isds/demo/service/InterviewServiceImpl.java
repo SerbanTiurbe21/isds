@@ -1,6 +1,7 @@
 package com.example.isds.demo.service;
 
 import com.example.isds.demo.dto.InterviewScoreDocumentDTO;
+import com.example.isds.demo.exception.InterviewScoreDocumentAlreadyExistsException;
 import com.example.isds.demo.exception.InterviewNotFoundException;
 import com.example.isds.demo.exception.InvalidSectionTitleException;
 import com.example.isds.demo.model.InterviewScoreDocument;
@@ -29,6 +30,13 @@ public class InterviewServiceImpl implements InterviewService {
     @Override
     public InterviewScoreDocument createInterviewScoreDocument(InterviewScoreDocument interviewScoreDocument) {
         validateSectionTitles(interviewScoreDocument.getSections());
+        interviewRepository.findByCandidateIdAndRoleAppliedForAndInterviewDate(
+                        interviewScoreDocument.getCandidateId(),
+                        interviewScoreDocument.getRoleAppliedFor(),
+                        interviewScoreDocument.getInterviewDate())
+                .ifPresent(existingInterview -> {
+                    throw new InterviewScoreDocumentAlreadyExistsException("Interview document already exists for candidate ID: " + interviewScoreDocument.getCandidateId());
+                });
         return interviewRepository.save(interviewScoreDocument);
     }
 

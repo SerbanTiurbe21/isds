@@ -24,4 +24,13 @@ public class InterviewExceptionHandler {
         );
         return new ResponseEntity<>(interviewException, interviewException.getHttpStatus());
     }
+
+    @ExceptionHandler(value ={InterviewScoreDocumentAlreadyExistsException.class})
+    public ResponseEntity<Object> handleInterviewDocumentAlreadyExistsException(InterviewScoreDocumentAlreadyExistsException exception){
+        InterviewException interviewException = new InterviewException(
+                exception.getMessage(),
+                HttpStatus.CONFLICT
+        );
+        return new ResponseEntity<>(interviewException, interviewException.getHttpStatus());
+    }
 }
