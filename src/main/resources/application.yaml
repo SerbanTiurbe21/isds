@@ -14,13 +14,15 @@ spring:
     name: isds-service
   data:
     mongodb:
-      uri: mongodb://localhost:27017/isds
+      uri: mongodb+srv://serbantiurbe:gfKlzad6pSyYoVEA@interviewcompanionappcl.0dt0g6v.mongodb.net/?retryWrites=true&w=majority&appName=InterviewCompanionAppCluster
+      database: isds
   security:
     oauth2:
       resourceserver:
         jwt:
           issuer-uri: http://localhost:9090/realms/springboot-microservice-realm
           jwk-set-uri: ${spring.security.oauth2.resourceserver.jwt.issuer-uri}/protocol/openid-connect/certs
+          useInsecureTrustManager: true
 logging:
   level:
     org:
