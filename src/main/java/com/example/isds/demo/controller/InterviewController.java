@@ -73,7 +73,7 @@ public class InterviewController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Interview documents found", content = {@Content(schema = @Schema(implementation = InterviewScoreDocumentDTO.class))})
     })
-    @PreAuthorize("hasRole('ROLE_client-hr') or hasRole('ROLE_client-developer')")
+    @PreAuthorize("hasRole('ROLE_client-hr')")
     @GetMapping
     public Mono<ResponseEntity<List<InterviewScoreDocumentDTO>>> getAllInterviews() {
         List<InterviewScoreDocument> documents = interviewService.getAllInterviews();
