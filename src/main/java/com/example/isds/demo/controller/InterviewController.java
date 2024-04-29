@@ -34,7 +34,7 @@ public class InterviewController {
             @ApiResponse(responseCode = "400", description = "Invalid input"),
             @ApiResponse(responseCode = "409", description = "Interview document already exists")
     })
-    @PreAuthorize("hasRole('ROLE_client-hr')")
+    @PreAuthorize("hasRole('ROLE_client-hr') or hasRole('ROLE_client-admin')")
     @PostMapping("")
     public Mono<ResponseEntity<InterviewScoreDocument>> createInterview(
             @Parameter(description = "Interview document to be created", required = true) @RequestBody InterviewScoreDocument interviewScoreDocument) {
@@ -47,7 +47,7 @@ public class InterviewController {
             @ApiResponse(responseCode = "200", description = "Interview document found", content = {@Content(schema = @Schema(implementation = InterviewScoreDocumentDTO.class))}),
             @ApiResponse(responseCode = "404", description = "Interview document not found")
     })
-    @PreAuthorize("hasRole('ROLE_client-hr') or hasRole('ROLE_client-developer')")
+    @PreAuthorize("hasRole('ROLE_client-hr') or hasRole('ROLE_client-developer') or hasRole('ROLE_client-admin')")
     @GetMapping("/{id}")
     public Mono<ResponseEntity<InterviewScoreDocumentDTO>> getFormattedInterviewById(
             @Parameter(description = "ID of the interview document to be retrieved", required = true) @PathVariable String id) {
@@ -60,7 +60,7 @@ public class InterviewController {
             @ApiResponse(responseCode = "200", description = "Interview document found", content = {@Content(schema = @Schema(implementation = InterviewScoreDocumentDTO.class))}),
             @ApiResponse(responseCode = "404", description = "Interview document not found")
     })
-    @PreAuthorize("hasRole('ROLE_client-hr') or hasRole('ROLE_client-developer')")
+    @PreAuthorize("hasRole('ROLE_client-hr') or hasRole('ROLE_client-developer') or hasRole('ROLE_client-admin')")
     @GetMapping("/by-candidate-id/{candidateId}")
     public Mono<ResponseEntity<InterviewScoreDocumentDTO>> getInterviewByCandidateId(
             @Parameter(description = "ID of the candidate to retrieve the interview document for", required = true) @PathVariable String candidateId) {
@@ -72,7 +72,7 @@ public class InterviewController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Interview documents found", content = {@Content(schema = @Schema(implementation = InterviewScoreDocumentDTO.class))})
     })
-    @PreAuthorize("hasRole('ROLE_client-hr')")
+    @PreAuthorize("hasRole('ROLE_client-hr') or hasRole('ROLE_client-admin')")
     @GetMapping
     public Mono<ResponseEntity<List<InterviewScoreDocumentDTO>>> getAllInterviews() {
         List<InterviewScoreDocument> documents = interviewService.getAllInterviews();
@@ -85,7 +85,7 @@ public class InterviewController {
             @ApiResponse(responseCode = "200", description = "Interview document updated", content = {@Content(schema = @Schema(implementation = InterviewScoreDocument.class))}),
             @ApiResponse(responseCode = "404", description = "Interview document not found")
     })
-    @PreAuthorize("hasRole('ROLE_client-hr') or hasRole('ROLE_client-developer')")
+    @PreAuthorize("hasRole('ROLE_client-hr') or hasRole('ROLE_client-developer') or hasRole('ROLE_client-admin')")
     @PutMapping("/{id}")
     public Mono<ResponseEntity<InterviewScoreDocument>> updateInterview(
             @Parameter(description = "ID of the interview document to be updated", required = true) @PathVariable String id,
@@ -99,7 +99,7 @@ public class InterviewController {
             @ApiResponse(responseCode = "204", description = "Interview document deleted"),
             @ApiResponse(responseCode = "404", description = "Interview document not found")
     })
-    @PreAuthorize("hasRole('ROLE_client-hr')")
+    @PreAuthorize("hasRole('ROLE_client-hr') or hasRole('ROLE_client-admin')")
     @DeleteMapping("/{id}")
     public Mono<ResponseEntity<Void>> deleteInterviewById(
             @Parameter(description = "ID of the interview document to be deleted", required = true) @PathVariable String id) {
