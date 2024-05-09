@@ -34,7 +34,6 @@ class InterviewRepositoryTest {
 
         mockInterviewDocument = new InterviewScoreDocument();
         mockInterviewDocument.setSections(List.of(section));
-        mockInterviewDocument.setCandidateIdentifier("123");
         mockInterviewDocument.setInterviewDate(LocalDate.now());
         mockInterviewDocument.setLastUpdate(LocalDate.now());
         mockInterviewDocument.setFinalScore(4.0);

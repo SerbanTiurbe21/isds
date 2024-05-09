@@ -14,4 +14,5 @@ public interface InterviewService {
     double computeFinalScore(InterviewScoreDocument interviewScoreDocument);
     InterviewScoreDocumentDTO getFormattedInterviewById(String id);
     InterviewScoreDocumentDTO getFormattedInterviewByCandidateId(String candidateId);
+    void closeInterviewScoreDocument(String id);
 }

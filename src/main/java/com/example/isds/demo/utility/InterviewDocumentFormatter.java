@@ -25,8 +25,9 @@ public class InterviewDocumentFormatter {
                             .map(interviewer ->
                                     new InterviewerFeedbackDTO(
                                             interviewer.getName(),
-                                            interviewer.getScore() != null ? interviewer.getScore() : 0,
-                                            interviewer.getFeedback()))
+                                            interviewer.getRole(),
+                                            interviewer.getFeedback(),
+                                            interviewer.getScore() != null ? interviewer.getScore() : 0))
 
                             .collect(Collectors.toList());
                     return new SectionDTO(section.getTitle(), formattedInterviewers);
@@ -36,6 +37,13 @@ public class InterviewDocumentFormatter {
         String formattedInterviewDate = document.getInterviewDate().format(formatter);
         String formattedLastUpdateDate = document.getLastUpdate().format(formatter);
 
-        return new InterviewScoreDocumentDTO(document.getCandidateIdentifier(), formattedInterviewDate, formattedLastUpdateDate, formattedSections, finalScore, document.getRoleAppliedFor(), document.getCandidateId());
+        return new InterviewScoreDocumentDTO(
+                formattedInterviewDate,
+                formattedLastUpdateDate,
+                formattedSections,
+                finalScore,
+                document.getRoleAppliedFor(),
+                document.getCandidateId(),
+                document.getStatus());
     }
 }

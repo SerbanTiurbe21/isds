@@ -106,4 +106,17 @@ public class InterviewController {
         interviewService.deleteInterviewById(id);
         return Mono.just(ResponseEntity.noContent().build());
     }
+
+    @Operation(summary = "Close an existing interview document")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Interview document closed"),
+            @ApiResponse(responseCode = "404", description = "Interview document not found")
+    })
+    @PreAuthorize("hasRole('ROLE_client-hr') or hasRole('ROLE_client-admin')")
+    @PutMapping("/close/{id}")
+    public Mono<ResponseEntity<Void>> closeInterviewById(
+            @Parameter(description = "ID of the interview document to be closed", required = true) @PathVariable String id) {
+        interviewService.closeInterviewScoreDocument(id);
+        return Mono.just(ResponseEntity.noContent().build());
+    }
 }

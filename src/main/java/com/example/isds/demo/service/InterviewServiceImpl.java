@@ -4,28 +4,22 @@ import com.example.isds.demo.dto.InterviewScoreDocumentDTO;
 import com.example.isds.demo.exception.InterviewScoreDocumentAlreadyExistsException;
 import com.example.isds.demo.exception.InterviewNotFoundException;
 import com.example.isds.demo.exception.InvalidSectionTitleException;
-import com.example.isds.demo.model.InterviewScoreDocument;
-import com.example.isds.demo.model.Section;
+import com.example.isds.demo.exception.InvalidStatusException;
+import com.example.isds.demo.model.*;
 import com.example.isds.demo.repository.InterviewRepository;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.example.isds.demo.utility.InterviewDocumentFormatter.toDTO;
 
 @Service
+@RequiredArgsConstructor
 public class InterviewServiceImpl implements InterviewService {
     private final InterviewRepository interviewRepository;
-    private final List<String> validSectionTitles;
-
-    public InterviewServiceImpl(
-            InterviewRepository interviewRepository,
-            @Value("${application.section-titles}") List<String> validSectionTitles) {
-        this.interviewRepository = interviewRepository;
-        this.validSectionTitles = validSectionTitles;
-    }
+    private final SectionTitleService sectionTitleService;
 
     @Override
     public InterviewScoreDocument createInterviewScoreDocument(InterviewScoreDocument interviewScoreDocument) {
@@ -37,6 +31,11 @@ public class InterviewServiceImpl implements InterviewService {
                 .ifPresent(existingInterview -> {
                     throw new InterviewScoreDocumentAlreadyExistsException("Interview document already exists for candidate ID: " + interviewScoreDocument.getCandidateId());
                 });
+        if(interviewScoreDocument.getStatus() != DocumentStatus.NEW){
+            throw new InvalidStatusException("Invalid status: " + interviewScoreDocument.getStatus());
+        }
+        interviewScoreDocument.setFinalScore(computeFinalScore(interviewScoreDocument));
+        interviewScoreDocument.setStatus(DocumentStatus.NEW);
         return interviewRepository.save(interviewScoreDocument);
     }
 
@@ -56,7 +55,6 @@ public class InterviewServiceImpl implements InterviewService {
         InterviewScoreDocument interviewScoreDocument = getInterviewById(id);
 
         interviewScoreDocument.setSections(updatedInterviewScoreDocument.getSections());
-        interviewScoreDocument.setCandidateIdentifier(updatedInterviewScoreDocument.getCandidateIdentifier());
         interviewScoreDocument.setInterviewDate(updatedInterviewScoreDocument.getInterviewDate());
         interviewScoreDocument.setLastUpdate(updatedInterviewScoreDocument.getLastUpdate());
         interviewScoreDocument.setFinalScore(computeFinalScore(updatedInterviewScoreDocument));
@@ -86,14 +84,48 @@ public class InterviewServiceImpl implements InterviewService {
         return toDTO(document, finalScore);
     }
 
+    @Override
+    public void closeInterviewScoreDocument(String id) {
+        InterviewScoreDocument interviewScoreDocument = getInterviewById(id);
+        boolean hasHRFeedback = false;
+        boolean hasDevFeedback = false;
 
-    private List<String> getValidSectionTitles() {
-        return Collections.unmodifiableList(validSectionTitles);
+        for (Section section : interviewScoreDocument.getSections()) {
+            for (InterviewerFeedback feedback : section.getInterviewers()) {
+                if ("HR".equals(feedback.getRole()) || "admin".equals(feedback.getRole())) {
+                    hasHRFeedback = true;
+                }
+                if ("DEVELOPER".equals(feedback.getRole())) {
+                    hasDevFeedback = true;
+                }
+
+                if (hasHRFeedback && hasDevFeedback) {
+                    break;
+                }
+            }
+            if (hasHRFeedback && hasDevFeedback) {
+                break;
+            }
+        }
+        lockDocumentIfValid(hasHRFeedback, hasDevFeedback, interviewScoreDocument);
+    }
+
+    private void lockDocumentIfValid(boolean hasHRFeedback, boolean hasDevFeedback, InterviewScoreDocument interviewScoreDocument) {
+        if (hasHRFeedback && hasDevFeedback) {
+            interviewScoreDocument.setStatus(DocumentStatus.LOCKED);
+            interviewRepository.save(interviewScoreDocument);
+        } else {
+            throw new IllegalStateException("Cannot lock the document without feedback from both an HR and a Developer.");
+        }
     }
 
     private void validateSectionTitles(List<Section> sections) {
+        List<String> validTitles = sectionTitleService.getAllSectionTitles().stream()
+                .map(SectionTitle::getTitle)
+                .collect(Collectors.toList());
+
         for (Section section : sections) {
-            if (!getValidSectionTitles().contains(section.getTitle())) {
+            if (!validTitles.contains(section.getTitle())) {
                 throw new InvalidSectionTitleException("Invalid section title: " + section.getTitle());
             }
         }

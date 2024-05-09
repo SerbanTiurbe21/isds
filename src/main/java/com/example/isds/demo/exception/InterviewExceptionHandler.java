@@ -33,4 +33,13 @@ public class InterviewExceptionHandler {
         );
         return new ResponseEntity<>(interviewException, interviewException.getHttpStatus());
     }
+
+    @ExceptionHandler(value ={InvalidStatusException.class})
+    public ResponseEntity<Object> handleInvalidStatusException(InvalidStatusException exception){
+        InterviewException interviewException = new InterviewException(
+                exception.getMessage(),
+                HttpStatus.BAD_REQUEST
+        );
+        return new ResponseEntity<>(interviewException, interviewException.getHttpStatus());
+    }
 }

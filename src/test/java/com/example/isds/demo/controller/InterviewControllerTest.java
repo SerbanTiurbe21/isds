@@ -4,6 +4,7 @@ import com.example.isds.demo.dto.InterviewScoreDocumentDTO;
 import com.example.isds.demo.dto.InterviewerFeedbackDTO;
 import com.example.isds.demo.dto.SectionDTO;
 import com.example.isds.demo.exception.InterviewNotFoundException;
+import com.example.isds.demo.model.DocumentStatus;
 import com.example.isds.demo.model.InterviewScoreDocument;
 import com.example.isds.demo.model.InterviewerFeedback;
 import com.example.isds.demo.model.Section;
@@ -50,26 +51,25 @@ class InterviewControllerTest {
         section.setTitle("Java Comprehension");
         section.setInterviewers(List.of(interviewerFeedback));
 
-        InterviewerFeedbackDTO interviewerFeedbackDTO = new InterviewerFeedbackDTO("Jane Smith", 85.0, "Good performance");
+        InterviewerFeedbackDTO interviewerFeedbackDTO = new InterviewerFeedbackDTO("Jane Smith", "DEV", "Good performance", 85.0);
         SectionDTO sectionDTO = new SectionDTO("Java Comprehension", List.of(interviewerFeedbackDTO));
 
 
         mockInterviewDocument = new InterviewScoreDocument();
         mockInterviewDocument.setSections(List.of(section));
-        mockInterviewDocument.setCandidateIdentifier("John Doe");
         mockInterviewDocument.setRoleAppliedFor("Software Engineer");
         mockInterviewDocument.setCandidateId("1234");
         mockInterviewDocument.setInterviewDate(LocalDate.parse("2021-08-01"));
         mockInterviewDocument.setLastUpdate(LocalDate.parse("2021-08-01"));
 
         mockInterviewDocumentDTO = new InterviewScoreDocumentDTO(
-                "John Doe",
                 "2021-08-01",
                 "2021-08-01",
                 List.of(sectionDTO),
-                88.0,
+                85.0,
                 "Software Engineer",
-                "1234"
+                "1234",
+                DocumentStatus.NEW
         );
     }
 
@@ -85,7 +85,6 @@ class InterviewControllerTest {
 
         Mono<ResponseEntity<InterviewScoreDocument>> response = interviewController.createInterview(mockInterviewDocument);
 
-//        assertEquals(HttpStatus.CREATED.value(), response.getStatusCode().value());
         assertEquals(HttpStatus.CREATED.value(), Objects.requireNonNull(response.block()).getStatusCode().value());
         assertEquals(mockInterviewDocument, Objects.requireNonNull(response.block()).getBody());
 
@@ -203,5 +202,16 @@ class InterviewControllerTest {
 
         assertEquals(HttpStatus.NO_CONTENT, Objects.requireNonNull(response.block()).getStatusCode());
         verify(interviewService).deleteInterviewById(id);
+    }
+
+    @Test
+    void shouldCloseInterview() {
+        String id = "1234";
+        doNothing().when(interviewService).closeInterviewScoreDocument(id);
+
+        Mono<ResponseEntity<Void>> response = interviewController.closeInterviewById(id);
+
+        assertEquals(HttpStatus.NO_CONTENT, Objects.requireNonNull(response.block()).getStatusCode());
+        verify(interviewService).closeInterviewScoreDocument(id);
     }
 }

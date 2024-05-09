@@ -7,6 +7,7 @@ import lombok.Value;
 @AllArgsConstructor
 public class InterviewerFeedbackDTO {
     String name;
-    Double score;
+    String role;
     String feedback;
+    Double score;
 }

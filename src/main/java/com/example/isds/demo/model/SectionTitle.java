@@ -3,13 +3,15 @@ package com.example.isds.demo.model;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.List;
-
+@Document(collection = "SectionTitles")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Section {
+public class SectionTitle {
+    private String id;
+    @NonNull
     private String title;
-    private List<InterviewerFeedback> interviewers;
 }
