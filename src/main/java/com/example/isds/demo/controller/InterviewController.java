@@ -126,6 +126,7 @@ public class InterviewController {
             @ApiResponse(responseCode = "404", description = "Interview document not found")
     })
     @PreAuthorize("hasRole('ROLE_client-hr') or hasRole('ROLE_client-developer') or hasRole('ROLE_client-admin')")
+    @GetMapping("/by-candidate-id/{candidateId}")
     public Mono<ResponseEntity<InterviewScoreDocument>> getInterviewByCandidateId(
             @Parameter(description = "ID of the candidate to retrieve the interview document for", required = true) @PathVariable String candidateId) {
         InterviewScoreDocument interviewScoreDocument = interviewService.getInterviewByCandidateId(candidateId);
