@@ -110,6 +110,12 @@ public class InterviewServiceImpl implements InterviewService {
         lockDocumentIfValid(hasHRFeedback, hasDevFeedback, interviewScoreDocument);
     }
 
+    @Override
+    public InterviewScoreDocument getInterviewByCandidateId(String candidateId) {
+        return interviewRepository.findByCandidateId(candidateId)
+                .orElseThrow(() -> new InterviewNotFoundException("Interview document not found for candidate ID: " + candidateId));
+    }
+
     private void lockDocumentIfValid(boolean hasHRFeedback, boolean hasDevFeedback, InterviewScoreDocument interviewScoreDocument) {
         if (hasHRFeedback && hasDevFeedback) {
             interviewScoreDocument.setStatus(DocumentStatus.LOCKED);

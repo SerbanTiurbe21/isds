@@ -15,4 +15,5 @@ public interface InterviewService {
     InterviewScoreDocumentDTO getFormattedInterviewById(String id);
     InterviewScoreDocumentDTO getFormattedInterviewByCandidateId(String candidateId);
     void closeInterviewScoreDocument(String id);
+    InterviewScoreDocument getInterviewByCandidateId(String candidateId);
 }

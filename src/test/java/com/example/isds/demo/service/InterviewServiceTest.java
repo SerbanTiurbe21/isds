@@ -259,4 +259,23 @@ class InterviewServiceTest {
 
         verify(interviewRepository, never()).save(any(InterviewScoreDocument.class));
     }
+
+    @Test
+    void shouldGetInterviewByCandidateId() {
+        when(interviewRepository.findByCandidateId("candidate1")).thenReturn(Optional.of(mockInterviewDocument));
+
+        InterviewScoreDocument result = interviewService.getInterviewByCandidateId("candidate1");
+
+        assertNotNull(result);
+        assertEquals("candidate1", result.getCandidateId());
+    }
+
+    @Test
+    void shouldThrowInterviewNotFoundExceptionWhenInterviewByCandidateIdNotFound() {
+        when(interviewRepository.findByCandidateId("candidate1")).thenReturn(Optional.empty());
+
+        assertThrows(InterviewNotFoundException.class, () -> {
+            interviewService.getInterviewByCandidateId("candidate1");
+        });
+    }
 }

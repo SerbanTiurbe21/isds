@@ -122,7 +122,7 @@ class InterviewControllerTest {
     void getInterviewByCandidateIdShouldReturnInterviewWhenFound() {
         when(interviewService.getFormattedInterviewByCandidateId("1234")).thenReturn(mockInterviewDocumentDTO);
 
-        Mono<ResponseEntity<InterviewScoreDocumentDTO>> response = interviewController.getInterviewByCandidateId("1234");
+        Mono<ResponseEntity<InterviewScoreDocumentDTO>> response = interviewController.getFormattedInterviewByCandidateId("1234");
 
         assertEquals(OK.value(), Objects.requireNonNull(response.block()).getStatusCode().value());
         assertEquals(mockInterviewDocumentDTO, Objects.requireNonNull(response.block()).getBody());
@@ -136,7 +136,7 @@ class InterviewControllerTest {
         when(interviewService.getFormattedInterviewByCandidateId(candidateId)).thenThrow(new InterviewNotFoundException("Interview document not found for candidate ID: " + candidateId));
 
         Exception exception = assertThrows(InterviewNotFoundException.class, () -> {
-            interviewController.getInterviewByCandidateId(candidateId);
+            interviewController.getFormattedInterviewByCandidateId(candidateId);
         });
 
         assertEquals("Interview document not found for candidate ID: non-existent-id", exception.getMessage());
@@ -213,5 +213,17 @@ class InterviewControllerTest {
 
         assertEquals(HttpStatus.NO_CONTENT, Objects.requireNonNull(response.block()).getStatusCode());
         verify(interviewService).closeInterviewScoreDocument(id);
+    }
+
+    @Test
+    void shouldFindInterviewByCandidateId() {
+        String candidateId = "1234";
+        when(interviewService.getInterviewByCandidateId(candidateId)).thenReturn(mockInterviewDocument);
+
+        Mono<ResponseEntity<InterviewScoreDocument>> response = interviewController.getInterviewByCandidateId(candidateId);
+
+        assertEquals(HttpStatus.OK, Objects.requireNonNull(response.block()).getStatusCode());
+        assertEquals(mockInterviewDocument, Objects.requireNonNull(response.block()).getBody());
+        verify(interviewService).getInterviewByCandidateId(candidateId);
     }
 }
