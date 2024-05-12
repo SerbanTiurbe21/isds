@@ -34,7 +34,7 @@ public class InterviewController {
             @ApiResponse(responseCode = "400", description = "Invalid input"),
             @ApiResponse(responseCode = "409", description = "Interview document already exists")
     })
-    @PreAuthorize("hasRole('ROLE_client-hr') or hasRole('ROLE_client-admin')")
+    @PreAuthorize("hasRole('ROLE_client-hr') or hasRole('ROLE_client-admin') or hasRole('ROLE_client-developer')")
     @PostMapping("")
     public Mono<ResponseEntity<InterviewScoreDocument>> createInterview(
             @Parameter(description = "Interview document to be created", required = true) @RequestBody InterviewScoreDocument interviewScoreDocument) {
