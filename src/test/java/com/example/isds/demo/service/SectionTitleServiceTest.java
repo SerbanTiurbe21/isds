@@ -1,6 +1,7 @@
 package com.example.isds.demo.service;
 
 import com.example.isds.demo.model.SectionTitle;
+import com.example.isds.demo.repository.SectionTitleRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -40,9 +41,6 @@ class SectionTitleServiceTest {
         assert response != null;
         verify(sectionTitleRepository).save(any(SectionTitle.class));
     }
-
-//    @Test
-//    void shouldT
 
     @Test
     void shouldGetAllSectionTitles() {
