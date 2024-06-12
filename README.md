@@ -1,4 +1,4 @@
-# Serviciul InterviewScoreDocument
+# Microserviciul InterviewScoreDocument
 
 Serviciul InterviewScoreDocument este un microserviciu care gestionează documentele de evaluare a interviurilor. Acesta oferă funcționalități pentru crearea, preluarea și actualizarea documentelor de evaluare a interviurilor, implementând mecanisme de verificare pentru a preveni duplicarea documentelor.
 
